@@ -1,0 +1,116 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-item/paper-item-body.html">
+
+
+<dom-module id="my-overview">
+  <template>
+    <style  is="custom-style" include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+
+        --paper-item: {
+          color: black;
+          border: 1px solid #e5e5e5;
+        };
+
+        --paper-item-body-secondary-color: black;
+
+        --paper-item-body-secondary: {
+          font-weight: bold;
+        };
+      }
+
+      .up {
+        color: #007D34;
+      }
+
+      .down {
+        color: #C40000;
+      }
+    </style>
+
+    <div class="card">
+      <h1>Overview</h1>
+
+      <iron-ajax auto
+        url="https://core-api.barchart.com/v1/quotes/get"
+        params={{ajaxParams}}
+        handle-as="json"
+        last-response="{{ajaxResponse}}">
+      </iron-ajax>
+
+      <div role="listbox">
+        <template is="dom-repeat" items="[[ajaxResponse.data]]">
+          <paper-item>
+            <paper-item-body two-line>
+              <div>[[item.symbolName]] ([[item.symbol]])</div>
+              <div secondary>
+                [[item.lastPrice]]
+                <span class$="[[_setColor(item.priceChange)]]">
+                  [[item.priceChange]] ([[item.percentChange]])
+                </span>
+                <small>[[item.tradeTime]]</small>
+              </div>
+            </paper-item-body>
+          </paper-item>
+        </template>
+      </div>
+
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'my-overview',
+
+      properties: {
+        fields: {
+          type: Array,
+          value: function() {
+            return ['symbol','symbolName','lastPrice','priceChange',
+              'percentChange','highPrice','lowPrice','lowPrice1y','highPrice1y',
+              'movingAverage5d','movingAverage20d','movingAverage50d',
+              'movingAverage65d','movingAverage100d','movingAverage130d',
+              'movingAverage200d','movingAverage260d','tradeTime'];
+          }
+        },
+
+        meta: {
+          type: Array,
+          value: function () {
+            return ['field.shortName','field.description'];
+          }
+        },
+
+        symbols: {
+          type: Array,
+          value: function () {
+            return ['$SPX','$IDX','TRRNX','PRGTX','AAPL'];
+          }
+        },
+
+        ajaxParams: {
+           type: String,
+           computed: 'buildRequest(symbols, fields, meta)'
+        }
+      },
+
+      _setColor: function(priceChange) {
+        return priceChange.charAt(0) === '+' ? 'up' : 'down';
+      },
+
+      buildRequest: function (symbols, fields, meta) {
+        return {
+          symbols: symbols.toString(),
+          fields: fields.toString(),
+          meta: meta.toString()
+        }
+      }
+    });
+  </script>
+</dom-module>

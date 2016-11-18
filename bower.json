@@ -18,7 +18,9 @@
     "polymer": "Polymer/polymer#^1.6.0",
     "paper-input": "PolymerElements/paper-input#^1.1.21",
     "iron-icons": "PolymerElements/iron-icons#^1.2.0",
-    "iron-ajax": "PolymerElements/iron-ajax#^1.4.3"
+    "iron-ajax": "PolymerElements/iron-ajax#^1.4.3",
+    "paper-item": "PolymerElements/paper-item#^1.2.1",
+    "paper-button": "PolymerElements/paper-button#^1.0.14"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"

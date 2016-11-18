@@ -1,15 +1,28 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="shared-styles.html">
-<link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-item/paper-item-body.html">
 
-<dom-module id="my-view1">
+
+<dom-module id="my-search">
   <template>
-    <style include="shared-styles">
+    <style  is="custom-style" include="shared-styles">
       :host {
         display: block;
 
         padding: 10px;
+
+        --paper-item-min-height: 72px;
+
+        --paper-item: {
+          border: 1px solid #e5e5e5;
+        };
+      }
+
+      div[role="listbox"] {
+        padding-top: 20px;
       }
     </style>
 
@@ -30,19 +43,23 @@
         last-response="{{ajaxResponse}}">
       </iron-ajax>
 
-      <template is="dom-repeat" items="[[ajaxResponse.data]]">
-        <div class="horizontal-section">
-          <h2>[[item.symbol]]</h2>
-          <p>[[item.symbolName]]</p>
-        </div>
-      </template>
+      <div role="listbox">
+        <template is="dom-repeat" items="[[ajaxResponse.data]]">
+          <paper-item>
+            <paper-item-body two-line>
+              <div>[[item.symbol]]</div>
+              <div secondary>[[item.symbolName]]</div>
+            </paper-item-body>
+          </paper-item>
+        </template>
+      </div>
 
     </div>
   </template>
 
   <script>
     Polymer({
-      is: 'my-view1',
+      is: 'my-search',
 
       properties: {
         ajaxParams: {
