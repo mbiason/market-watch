@@ -1,8 +1,10 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="shared-styles.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 
 
 <dom-module id="my-overview">
@@ -23,6 +25,30 @@
         --paper-item-body-secondary: {
           font-weight: bold;
         };
+
+        --paper-progress-height: 10px;
+      }
+
+      .content {
+        border: 1px solid #dedede;
+        border-top: none;
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+      }
+
+      .content .details {
+        font-size: 14px;
+        padding: 5px 15px;
+        border-bottom: 1px solid #CCC;
+        overflow: hidden;
+      }
+
+      .content .details paper-progress {
+        width: 100%;
+      }
+
+      .right {
+        float: right;
       }
 
       .up {
@@ -37,16 +63,17 @@
     <div class="card">
       <h1>Overview</h1>
 
-      <iron-ajax auto
+      <iron-ajax
+        id="quotes"
         url="https://core-api.barchart.com/v1/quotes/get"
-        params={{ajaxParams}}
+        params="{{_searchParams(symbols, fields, meta)}}"
         handle-as="json"
         last-response="{{ajaxResponse}}">
       </iron-ajax>
 
       <div role="listbox">
-        <template is="dom-repeat" items="[[ajaxResponse.data]]">
-          <paper-item>
+        <template is="dom-repeat" items="[[ajaxResponse.data]]" as="item">
+          <paper-item on-tap="itemTapped">
             <paper-item-body two-line>
               <div>[[item.symbolName]] ([[item.symbol]])</div>
               <div secondary>
@@ -58,6 +85,19 @@
               </div>
             </paper-item-body>
           </paper-item>
+          <iron-collapse opened$="[[item.open]]">
+            <div class="content">
+              <div class="details">
+                <div>52-Week Low<span class="right">52-Week High</span></div>
+                <div>[[item.lowPrice1y]]<span class="right">[[item.highPrice1y]]</span></div>
+                <paper-progress value$="[[item.raw.lastPrice]]" min$="[[item.raw.lowPrice1y]]" max$="[[item.raw.highPrice1y]]"></paper-progress>
+              </div>
+              <div class="details">100-Day Moving Average<span class="right">[[item.movingAverage100d]]</span></div>
+              <div class="details">6-Month Moving Average<span class="right">[[item.movingAverage130d]]</span></div>
+              <div class="details">200-Day Moving Average<span class="right">[[item.movingAverage200d]]</span></div>
+              <div class="details">12-Month Moving Average<span class="right">[[item.movingAverage260d]]</span></div>
+            </div>
+          </iron-collapse>
         </template>
       </div>
 
@@ -90,27 +130,32 @@
         symbols: {
           type: Array,
           value: function () {
-            return ['$SPX','$IDX','TRRNX','PRGTX','AAPL'];
+            return ['$SPX','$IDX','TRRNX','PRGTX'];
           }
-        },
-
-        ajaxParams: {
-           type: String,
-           computed: 'buildRequest(symbols, fields, meta)'
         }
+      },
+
+      itemTapped: function (e) {
+        let open = e.model.get('item.open');
+        if (open) e.model.set('item.open', false);
+        else e.model.set('item.open', true);
       },
 
       _setColor: function(priceChange) {
         return priceChange.charAt(0) === '+' ? 'up' : 'down';
       },
 
-      buildRequest: function (symbols, fields, meta) {
-        return {
-          symbols: symbols.toString(),
-          fields: fields.toString(),
-          meta: meta.toString()
+      _searchParams: function(symbols, fields, meta) {
+        if (symbols.length) {
+          this.$.quotes.auto = true;
+          return {
+            symbols: symbols.toString(),
+            fields: fields.toString(),
+            raw: '1'
+          };
         }
       }
+
     });
   </script>
 </dom-module>

@@ -36,9 +36,10 @@
         required>
       </paper-input>
 
-      <iron-ajax auto
+      <iron-ajax
+        id="search"
         url="https://core-api.barchart.com/v1/search"
-        params={{ajaxParams}}
+        params="{{_searchParams(searchValue)}}"
         handle-as="json"
         last-response="{{ajaxResponse}}">
       </iron-ajax>
@@ -61,22 +62,16 @@
     Polymer({
       is: 'my-search',
 
-      properties: {
-        ajaxParams: {
-          type: String,
-          computed: 'buildSearchRequest(searchValue)'
-        }
-      },
-
-      buildSearchRequest: function (criteria) {
-        if (criteria) {
+      _searchParams: function(searchValue) {
+        if (searchValue) {
+          this.$.search.auto = true;
           return {
-            q: criteria,
+            q: searchValue,
             fields: 'symbol,symbolName,exchange',
             limit: '20',
             searchType: 'contains',
             searchName: '1'
-          }
+          };
         }
       }
 
