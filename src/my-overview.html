@@ -66,14 +66,15 @@
       <iron-ajax
         id="quotes"
         url="https://core-api.barchart.com/v1/quotes/get"
-        params="{{_searchParams(symbols, fields, meta)}}"
+        params="{{_searchParams(symbols, fields)}}"
         handle-as="json"
-        last-response="{{ajaxResponse}}">
+        last-response="{{ajaxResponse}}"
+        on-response="_onResponse">
       </iron-ajax>
 
       <div role="listbox">
         <template is="dom-repeat" items="[[ajaxResponse.data]]" as="item">
-          <paper-item on-tap="itemTapped">
+          <paper-item on-tap="_itemTapped">
             <paper-item-body two-line>
               <div>[[item.symbolName]] ([[item.symbol]])</div>
               <div secondary>
@@ -85,7 +86,7 @@
               </div>
             </paper-item-body>
           </paper-item>
-          <iron-collapse opened$="[[item.open]]">
+          <iron-collapse opened$="[[item.expanded]]">
             <div class="content">
               <div class="details">
                 <div>52-Week Low<span class="right">52-Week High</span></div>
@@ -113,17 +114,9 @@
           type: Array,
           value: function() {
             return ['symbol','symbolName','lastPrice','priceChange',
-              'percentChange','highPrice','lowPrice','lowPrice1y','highPrice1y',
-              'movingAverage5d','movingAverage20d','movingAverage50d',
-              'movingAverage65d','movingAverage100d','movingAverage130d',
-              'movingAverage200d','movingAverage260d','tradeTime'];
-          }
-        },
-
-        meta: {
-          type: Array,
-          value: function () {
-            return ['field.shortName','field.description'];
+              'percentChange','lowPrice1y','highPrice1y','movingAverage100d',
+              'movingAverage130d','movingAverage200d','movingAverage260d',
+              'tradeTime'];
           }
         },
 
@@ -135,17 +128,22 @@
         }
       },
 
-      itemTapped: function (e) {
-        let open = e.model.get('item.open');
-        if (open) e.model.set('item.open', false);
-        else e.model.set('item.open', true);
+      _itemTapped: function (e) {
+        const expanded = e.model.get('item.expanded');
+        if (expanded) e.model.set('item.expanded', false);
+        else e.model.set('item.expanded', true);
       },
 
-      _setColor: function(priceChange) {
-        return priceChange.charAt(0) === '+' ? 'up' : 'down';
+      _onResponse: function() {
+        this.async(function() {
+          const today = new Date().getHours();
+          if (today >= 8 && today <= 15) {
+             this.$.quotes.generateRequest();
+          }
+        }, 60000);
       },
 
-      _searchParams: function(symbols, fields, meta) {
+      _searchParams: function(symbols, fields) {
         if (symbols.length) {
           this.$.quotes.auto = true;
           return {
@@ -154,8 +152,11 @@
             raw: '1'
           };
         }
-      }
+      },
 
+      _setColor: function(priceChange) {
+        return priceChange.charAt(0) === '+' ? 'up' : 'down';
+      }
     });
   </script>
 </dom-module>
