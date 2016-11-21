@@ -1,6 +1,8 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="shared-styles.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-item/paper-item-body.html">
@@ -45,8 +47,8 @@
       </iron-ajax>
 
       <div role="listbox">
-        <template is="dom-repeat" items="[[ajaxResponse.data]]">
-          <paper-item>
+        <template is="dom-repeat" items="[[ajaxResponse.data]]" as="item">
+          <paper-item on-tap="_selectItem">
             <paper-item-body two-line>
               <div>[[item.symbol]]</div>
               <div secondary>[[item.symbolName]]</div>
@@ -54,6 +56,14 @@
           </paper-item>
         </template>
       </div>
+
+      <paper-dialog id="dialog" on-iron-overlay-closed="_dialogClosed">
+        <p>Are you sure you would like to add this to your watch list?</p>
+        <div class="buttons">
+          <paper-button dialog-dismiss>Cancel</paper-button>
+          <paper-button dialog-confirm autofocus>Yes</paper-button>
+        </div>
+      </paper-dialog>
 
     </div>
   </template>
@@ -72,6 +82,19 @@
             searchType: 'contains',
             searchName: '1'
           };
+        }
+      },
+
+      _selectItem: function(e) {
+        const item = e.model.get('item');
+        this.$.dialog.data = item;
+        this.$.dialog.open();
+      },
+
+      _dialogClosed: function(e) {
+        if (e.detail.confirmed) {
+          const item = this.$.dialog.data;
+          document.location.href = '/watch-list?symbol=' + item.symbol;
         }
       }
 

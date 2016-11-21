@@ -7,7 +7,7 @@
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 
 
-<dom-module id="my-overview">
+<dom-module id="my-watch-list">
   <template>
     <style  is="custom-style" include="shared-styles">
       :host {
@@ -61,12 +61,12 @@
     </style>
 
     <div class="card">
-      <h1>Overview</h1>
+      <h1>Watch List</h1>
 
       <iron-ajax
         id="quotes"
         url="https://core-api.barchart.com/v1/quotes/get"
-        params="{{_searchParams(symbols, fields)}}"
+        params="{{_searchParams(symbols, fields, params)}}"
         handle-as="json"
         last-response="{{ajaxResponse}}"
         on-response="_onResponse">
@@ -107,9 +107,13 @@
 
   <script>
     Polymer({
-      is: 'my-overview',
+      is: 'my-watch-list',
 
       properties: {
+        params: {
+          type: String
+        },
+
         fields: {
           type: Array,
           value: function() {
@@ -137,13 +141,17 @@
       _onResponse: function() {
         this.async(function() {
           const today = new Date().getHours();
-          if (today >= 8 && today <= 15) {
+          if (today >= 8 && today <= 16) {
              this.$.quotes.generateRequest();
           }
-        }, 60000);
+        }, 30000);
       },
 
-      _searchParams: function(symbols, fields) {
+      _searchParams: function(symbols, fields, params) {
+        if (params.symbol) {
+          symbols.push(params.symbol);
+        }
+
         if (symbols.length) {
           this.$.quotes.auto = true;
           return {
